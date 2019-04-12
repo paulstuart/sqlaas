@@ -1,6 +1,11 @@
 #!/bin/bash
 
+# a test script to run queries against the web server
+#
 BASEURL="http://127.0.0.1:5000"
+
+# exit on error
+set -e
 
 bah() {
 curl -s -X POST $BASEURL -T - <<EOF
@@ -28,7 +33,7 @@ curl -s -X POST \
 	-H "Content-Type: application/sql" \
 	$BASEURL/sqlite/v1/db/create/pookie -d @- <<EOF
 create table test01 (
-id int primary key,
+id integer primary key,
 name text
 );
 EOF
@@ -48,18 +53,22 @@ schema() {
     say
 }
 
+## DUPE OF sql()
 table() {
     say "make table"
-    curl -s -X POST \
-	-H "Content-Type: application/sql" \
-	$BASEURL/sqlite/v1/db/pookie/table/test01 -d @- <<EOF
+    curl -s \
+         -X POST \
+	       -H "Content-Type: application/sql" \
+	      $BASEURL/sqlite/v1/db/pookie/create -d @- \
+<<EOF
 create table if not exists test01 (
 id integer primary key,
 name text
 );
 EOF
-    say "table is made"
+    say "the table is made"
 }
+
 
 insertXXX() {
     say "insert into table: test01"
@@ -75,14 +84,14 @@ insert() {
     say "insert into table"
     curl -s -X POST \
 	-H "Content-Type: application/json" \
-	$BASEURL/sqlite/v1/db/pookie/table/test01 -d @- <<EOF
+	$BASEURL/sqlite/v1/db/pookie/insert -d @- <<EOF
 {
    "query": "insert into test01 (name) values (?)",
    "values": [
-	["first"],
-	["other"],
-	["quad"],
-	["aha"]
+      ["first"],
+      ["other"],
+      ["quad"],
+      ["aha"]
     ]
 }
 EOF
@@ -97,9 +106,9 @@ selected() {
     say "table is selected"
 }
 
-sql
-table
-list
-schema
-insertXXX
-selected
+sql       # create db
+table     # create table in db
+#list
+#schema
+insert    # insert rows into table
+selected  # query rows in table

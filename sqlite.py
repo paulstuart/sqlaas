@@ -42,13 +42,14 @@ def dbschema(name):
     query='select * from sqlite_master'
     repl = []
     for row in c.execute(query):
-        s = "type:{0} name:{1} table:{2} rootpage:{3} sql:{4}".format(*row) 
+        s = "schema type:{0} name:{1} table:{2} rootpage:{3} sql:{4}".format(*row) 
         repl.append(s)
     conn.close()
     return repl
 
 
-def dbtable(name, table, ddl):
+def dbtable(name, ddl):
+    """create/alter/delete table"""
     conn = sqlite3.connect(fullname(name))
     c = conn.cursor()
     c.execute(ddl)
@@ -57,18 +58,13 @@ def dbtable(name, table, ddl):
 
 
 def dbinsert(name, dml, values):
-    print("dbinsert name:", name)
-    print("dbinsert dml:", dml)
-    print("dbinsert values:", values)
+    print("dbinsert name:", name, "dml:", dml, "values:", values)
     conn = sqlite3.connect(fullname(name))
     c = conn.cursor()
-    print("dbinsert pre exec")
-    c.execute(dml, list(values))
-    print("dbinsert post exec")
+    c.executemany(dml, list(values))
     conn.commit()
-    print("dbinsert post commit")
     conn.close()
-    print ("dbinsert did not raise error?")
+    print ("dbinsert did not raise error!")
 
 def dbselect(name, table):
     conn = sqlite3.connect(fullname(name))

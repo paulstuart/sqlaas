@@ -17,13 +17,6 @@ app = Flask(__name__)
 app.debug = True
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=prefix)
 
-print ("STATIC URL:", app.static_url_path)
-
-@app.route('/sqlite/child')
-def child():
-    print("URL4:", url_for('static', filename='style.css'))
-    return render_template('child.html')
-
 
 # our top-level route
 @app.route('/')
@@ -39,6 +32,7 @@ def site_map():
 @app.route('/db/<dbname>/table/<table>/', methods=['GET'])
 def app_table_schema(dbname, table):
     title = "Schema for " + table
+    #print("TBL:", url_for(db_table_info, table))
     columns, rows = db_table_info(dbname, table)
     return render_db_table(title, columns, rows)
     #return render_template("table_info.html", base=base, columns=columns, rows=rows, title=title)

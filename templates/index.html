@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block title %}SQLite As A Service{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock %}
+{% block content %}
+  <p class="important">
+    Welcome on SQLite As A Service!
+  </p>
+  <ul>
+	  <li><a href={{ url_for('app_db_list') }}>DB List</a></li>
+  </ul>
+{% endblock %}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Sqlite</title>
+</head>
+<body>
+  <h1>Tables in {{ dbname }}</h1>
+  <table>
+  <tr>
+   <th>Name</th>
+  </tr>
+  {% for table in tables %}
+  <tr>
+     <td><a href="{{ base }}/db/{{ dbname }}/table/{{table}}/">{{table}}</a></td>
+  </tr>
+  {% endfor %}
+  </table>
+</body>
+</html>

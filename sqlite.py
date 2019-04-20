@@ -22,10 +22,24 @@ def dblist():
     f = []
     for (dirpath, dirnames, filenames) in os.walk(dir):
         for filename in filenames:
-            named = filename.split(".")[0]
-            f.append(named)
+            print("checking:", filename)
+            named = filename.split(".")
+            if ((len(named) > 1) and (named[1] == "db")):
+                f.append(named[0]) 
     return tuple(f)
 
+
+def dbtables(name):
+    """
+      returns a list of tables 
+    """
+    conn = sqlite3.connect(fullname(name))
+    c = conn.cursor()
+
+    query="select name from sqlite_master where type = 'table';"
+    repl = [row[0] for row in c.execute(query)]
+    conn.close()
+    return repl
 
 def dbschema(name):
     """
@@ -47,6 +61,18 @@ def dbschema(name):
     conn.close()
     return repl
 
+def db_table_info(dbname,table):
+    """ TODO: parameterize / sanitize! """
+    query = "pragma table_info({})".format(table)
+    return db_query(dbname, query)
+
+    conn = sqlite3.connect(fullname(dbname))
+    c = conn.cursor()
+    # returns cid, name, type, notnull, dflt_value, pk
+    repl = [row for rows in c.execute(query)]
+    conn.commit()
+    conn.close()
+    return repl
 
 def dbtable(name, ddl):
     """create/alter/delete table"""
@@ -77,3 +103,17 @@ def dbselect(name, table):
     conn.close()
     return "\n".join(repl)
 
+# table_info
+# returns cid, name, type, notnull, dflt_value, pk
+def db_query(dbname, query):
+    conn = sqlite3.connect(fullname(dbname))
+    c = conn.cursor()
+    results = c.execute(query)
+    #columns = [ results.description.name(i) for i in results.description.index ]
+    columns = [ desc[0] for desc in results.description ]
+    print("query column:", columns)
+    rows = [row[:] for row in results]
+    print("rows:", rows)
+    conn.commit()
+    conn.close()
+    return columns, rows

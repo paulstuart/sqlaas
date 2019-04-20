@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ title }}</title>
+</head>
+<body>
+  <h1>{{ title }}</h1>
+  <table>
+  <tr>
+    {% for column in columns %}
+    <th>{{ column }}</th>
+    {% endfor %}
+  </tr>
+  {% for row in rows %}
+  <tr>
+  {% for col in row %}
+  <td>{{ col }}</td>
+  {% endfor %}
+  </tr>
+  {% endfor %}
+  </table>
+</body>
+</html>

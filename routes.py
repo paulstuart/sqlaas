@@ -2,42 +2,67 @@
 
 # starting from http://flask.pocoo.org/docs/1.0/quickstart/
 
-from flask import Flask, session, redirect, url_for, escape, request
+from flask import Flask, session, redirect, url_for, escape, request, render_template
 
 import json
 
-from sqlite import dbcreate, dblist, dbschema, dbtable, dbinsert, dbselect
+from sqlite import dbcreate, dblist, dbschema, dbtable, dbinsert, dbselect, dbtables, db_query, db_table_info
+
+from helpers import site_links, PrefixMiddleware
+
+# routing from nginx based on this prefix
+prefix = "/sqlite"
 
 app = Flask(__name__)
+app.debug = True
+app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=prefix)
 
-base = "/sqlite/v1"
+print ("STATIC URL:", app.static_url_path)
 
+@app.route('/sqlite/child')
+def child():
+    print("URL4:", url_for('static', filename='style.css'))
+    return render_template('child.html')
+
+
+# our top-level route
 @app.route('/')
-def hello_world():
-    return 'hey now.'
+def app_home():
+    return render_template('index.html')
 
-@app.route(base + '/db/create/<name>', methods=['POST'])
-def app_db_create(name):
+
+# https://stackoverflow.com/questions/13317536/get-list-of-all-routes-defined-in-the-flask-app/19116758
+@app.route("/site-map")
+def site_map():
+    return render_template("all_links.html", links=site_links(app))
+
+@app.route('/db/<dbname>/table/<table>/', methods=['GET'])
+def app_table_schema(dbname, table):
+    title = "Schema for " + table
+    columns, rows = db_table_info(dbname, table)
+    return render_db_table(title, columns, rows)
+    #return render_template("table_info.html", base=base, columns=columns, rows=rows, title=title)
+
+@app.route('/db/<dbname>/', methods=['GET'])
+def app_db_tables(dbname):
+    return render_template("tables.html", dbname=dbname, tables=dbtables(dbname))
+
+@app.route('/db/<dbname>', methods=['POST'])
+def app_db_create(dbname):
     try:
-        dbcreate(name)
-        return "created db: " + name + "\n"
+        dbcreate(dbname)
+        return "created db: " + dbname + "\n"
     except Exception as error:
-        print("create name:{} error:{}", format(name, error))
-        return "create name:{} error:{}\n", format(name, error)
+        print("create name:{} error:{}", format(dbname, error))
+        return "create name:{} error:{}\n", format(dbname, error)
 
-@app.route(base + '/db/list', methods=['GET'])
+@app.route('/db/', methods=['GET'])
 def app_db_list():
-    return "DB LIST HERE: %s\n" % "\n".join(dblist()) + "\n"
+    return render_template('db_list.html', dblist = dblist())
+    #return "DB LIST: %s\n" % "\n".join(dblist()) + "\n"
 
-@app.route(base + '/db/<name>/schema', methods=['GET'])
-def app_db_schema(name):
-    try:
-        return "schemed:\n" + "\n".join(dbschema(name)) + "\n"
-    except:
-        raise
-    return "should never see this, ok?"
     
-@app.route(base + '/db/<db>/create', methods=['POST'])
+@app.route('/db/<db>/create', methods=['POST'])
 def app_db_create_table(db):
     try:
         data = request.get_data(as_text=True, cache=False)
@@ -51,12 +76,14 @@ def app_db_create_table(db):
         return "error:{} data:{}\n".format(error, data)
 
 
-@app.route(base + '/db/<name>/table/<table>', methods=['GET'])
+"""
+@app.route('/db/<name>/table/<table>', methods=['GET'])
 def app_db_select(name, table):
     return dbselect(name, table)
+"""
 
 
-@app.route(base + '/db/<name>/insert', methods=['POST'])
+@app.route('/db/<name>/insert', methods=['POST'])
 def app_db_insert(name):
     print("insert db:", name, "our type:", request.content_type)
     if request.content_type == 'application/json':
@@ -97,3 +124,9 @@ def leftovers():
             print("ah error:", error)
 
     return "thanks\n"
+
+def render_db_table(title, columns, rows):
+    return render_template("basic_table.html", columns=columns, rows=rows, title=title)
+
+
+#@app.route('/sqlite/static/<file>')

@@ -2,13 +2,17 @@
 
 # starting from http://flask.pocoo.org/docs/1.0/quickstart/
 
-from flask import Flask, session, redirect, url_for, escape, request, render_template
+from flask import Flask, session, redirect, url_for, escape, request, render_template, Response
 
 import json
 
 from sqlite import dbcreate, dblist, dbschema, dbtable, dbinsert, dbselect, dbtables, db_query, db_table_info
+from sqlite import fullname # hack for now
 
 from helpers import site_links, PrefixMiddleware
+
+# temp hack
+import sqlite3
 
 # routing from nginx based on this prefix
 prefix = "/sqlite"
@@ -32,10 +36,20 @@ def site_map():
 @app.route('/db/<dbname>/table/<table>/', methods=['GET'])
 def app_table_schema(dbname, table):
     title = "Schema for " + table
-    #print("TBL:", url_for(db_table_info, table))
     columns, rows = db_table_info(dbname, table)
     return render_db_table(title, columns, rows)
     #return render_template("table_info.html", base=base, columns=columns, rows=rows, title=title)
+
+@app.route('/db/<dbname>/dump', methods=['GET'])
+def app_db_dump(dbname):
+    def generate():
+        # how to return from sqlite.py instead? (close after stream!)
+        conn = sqlite3.connect(fullname(dbname))
+        for line in conn.iterdump():
+            yield line + "\n"
+        conn.close()
+
+    return Response(generate(), mimetype='text/sql')
 
 @app.route('/db/<dbname>/', methods=['GET'])
 def app_db_tables(dbname):

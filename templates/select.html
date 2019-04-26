@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock %}
+{% block content %}
+<form method="POST" action="{{ request.url }}">
+	<textarea id="query" name="query" rows="10" cols="80" placeholder="your query here..."></textarea>
+	<br>
+	<input class="button" 
+                type="button" onclick="window.location.replace('{{ url_for('app_db_list') }}');"
+               value="Cancel" />
+	<input type="submit" value="Query">
+</form>
+{% endblock %}

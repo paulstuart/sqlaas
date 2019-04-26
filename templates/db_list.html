@@ -14,6 +14,8 @@
   {% for dbname in dblist %}
   <tr>
      <td><a href="{{ url_for('app_db_tables', dbname=dbname) }}">{{ dbname }}</a></td>
+     <td><a href="{{ url_for('app_db_select_form', dbname=dbname) }}">Query</a></td>
+     <td><a href="{{ url_for('app_db_dump', dbname=dbname) }}">Dump</a></td>
   </tr>
   {% endfor %}
   </table>

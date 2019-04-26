@@ -28,3 +28,33 @@ input[type=submit] { align-self: start; min-width: 10em; }
 /* added by me */
 #footer {margin-top: 10em; }
 
+/* 
+per https://developer.mozilla.org/en-US/docs/Web/HTML/Element/nav
+*/
+nav {
+    border-bottom: 1px solid black;
+    background: white;
+}
+
+.crumbs ol {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.crumb {
+    display: inline-block;
+}
+
+.crumb a::after {
+    display: inline-block;
+    color: #000;
+    content: '>';
+    font-size: 80%;
+    font-weight: bold;
+    padding: 0 3px;
+}
+
+.logo {
+    margin-right: 1em;
+    font: italic 1.2em "Palatino", serif;
+}

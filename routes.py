@@ -6,8 +6,7 @@ from flask import Flask, session, redirect, url_for, escape, request, render_tem
 
 import json
 
-from sqlite import dbcreate, dblist, dbschema, dbtable, dbinsert, dbselect, dbtables, db_query, db_table_info
-from sqlite import fullname # hack for now
+from sqlite import dbcreate, dblist, dbschema, dbtable, dbinsert, dbselect, dbtables, db_query, db_table_info, db_dumper
 
 from helpers import site_links, PrefixMiddleware
 
@@ -21,6 +20,9 @@ app = Flask(__name__)
 app.debug = True
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=prefix)
 
+@app.template_filter('quote')
+def quote_filter(s):
+    return '"' + s + '"'
 
 # our top-level route
 @app.route('/')
@@ -38,18 +40,19 @@ def app_table_schema(dbname, table):
     title = "Schema for " + table
     columns, rows = db_table_info(dbname, table)
     return render_db_table(title, columns, rows)
-    #return render_template("table_info.html", base=base, columns=columns, rows=rows, title=title)
+
+@app.route('/db/<dbname>/select', methods=['GET'])
+def app_db_select_form(dbname):
+    return render_template("select.html", dbname=dbname)
 
 @app.route('/db/<dbname>/dump', methods=['GET'])
 def app_db_dump(dbname):
-    def generate():
-        # how to return from sqlite.py instead? (close after stream!)
-        conn = sqlite3.connect(fullname(dbname))
-        for line in conn.iterdump():
-            yield line + "\n"
-        conn.close()
-
+    generate = db_dumper(dbname)
     return Response(generate(), mimetype='text/sql')
+
+@app.route('/db/<dbname>/restore/<source>', methods=['POST'])
+def app_db_restore(dbname, source):
+    return "restore from: " + source
 
 @app.route('/db/<dbname>/', methods=['GET'])
 def app_db_tables(dbname):
@@ -67,7 +70,6 @@ def app_db_create(dbname):
 @app.route('/db/', methods=['GET'])
 def app_db_list():
     return render_template('db_list.html', dblist = dblist())
-    #return "DB LIST: %s\n" % "\n".join(dblist()) + "\n"
 
     
 @app.route('/db/<db>/create', methods=['POST'])
@@ -82,13 +84,6 @@ def app_db_create_table(db):
     except Exception as error:
         print("create table error:", error)
         return "error:{} data:{}\n".format(error, data)
-
-
-"""
-@app.route('/db/<name>/table/<table>', methods=['GET'])
-def app_db_select(name, table):
-    return dbselect(name, table)
-"""
 
 
 @app.route('/db/<name>/insert', methods=['POST'])

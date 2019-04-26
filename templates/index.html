@@ -10,7 +10,8 @@
   <p class="important">
     Welcome on SQLite As A Service!
   </p>
+  <a href="{{ url_for('site_map') }}">Site Map</a>
   <ul>
-	  <li><a href={{ url_for('app_db_list') }}>DB List</a></li>
+	  <li><a href="{{ url_for('app_db_list') }}">DB List</a></li>
   </ul>
 {% endblock %}

@@ -117,3 +117,13 @@ def db_query(dbname, query):
     conn.commit()
     conn.close()
     return columns, rows
+
+def db_dumper(dbname):
+    def generate():
+        # how to return from sqlite.py instead? (close after stream!)
+        conn = sqlite3.connect(fullname(dbname))
+        for line in conn.iterdump():
+            yield line + "\n"
+        conn.close()
+
+    return generate

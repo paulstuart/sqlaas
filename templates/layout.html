@@ -7,6 +7,14 @@
     {% endblock %}
   </head>
   <body>
+  <nav class="crumbs">
+	<div class="logo"><a href="{{ url_for('app_home') }}">SQLite As A Service</a></div>
+<!--
+	  <ol>
+		  <li class="crumb"><a href="{{ url_for('app_home') }}">Home</a></li>
+	  </ol>
+-->
+  </nav>
     <h2>{{ self.title() }}</h2>
     <div id="content">{% block content %}{% endblock %}</div>
     <div id="footer">

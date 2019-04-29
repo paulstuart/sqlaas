@@ -6,7 +6,7 @@ from flask import Flask, session, redirect, url_for, escape, request, render_tem
 
 import json
 
-from sqlite import dbcreate, dblist, dbschema, dbtable, dbinsert, dbselect, dbtables, db_query, db_table_info, db_dumper
+from sqlite import dbcreate, dblist, dbschema, dbtable, dbinsert, dbselect, dbtables, db_query, db_table_info, db_dumper, db_selector
 
 from helpers import site_links, PrefixMiddleware
 
@@ -33,7 +33,7 @@ def app_home():
 # https://stackoverflow.com/questions/13317536/get-list-of-all-routes-defined-in-the-flask-app/19116758
 @app.route("/site-map")
 def site_map():
-    return render_template("all_links.html", links=site_links(app))
+    return render_template("site_map.html", links=site_links(app))
 
 @app.route('/db/<dbname>/table/<table>/', methods=['GET'])
 def app_table_schema(dbname, table):
@@ -44,6 +44,12 @@ def app_table_schema(dbname, table):
 @app.route('/db/<dbname>/select', methods=['GET'])
 def app_db_select_form(dbname):
     return render_template("select.html", dbname=dbname)
+
+@app.route('/db/<dbname>/select', methods=['POST'])
+def app_db_select_query(dbname):
+    query = request.form['query']
+    generate = db_selector(dbname, query)
+    return Response(generate(), mimetype='text/plain')
 
 @app.route('/db/<dbname>/dump', methods=['GET'])
 def app_db_dump(dbname):

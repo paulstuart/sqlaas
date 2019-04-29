@@ -103,13 +103,11 @@ def dbselect(name, table):
     conn.close()
     return "\n".join(repl)
 
-# table_info
-# returns cid, name, type, notnull, dflt_value, pk
+""" TODO: this appears to be a dupe -- resolve """
 def db_query(dbname, query):
     conn = sqlite3.connect(fullname(dbname))
     c = conn.cursor()
     results = c.execute(query)
-    #columns = [ results.description.name(i) for i in results.description.index ]
     columns = [ desc[0] for desc in results.description ]
     print("query column:", columns)
     rows = [row[:] for row in results]
@@ -120,10 +118,20 @@ def db_query(dbname, query):
 
 def db_dumper(dbname):
     def generate():
-        # how to return from sqlite.py instead? (close after stream!)
         conn = sqlite3.connect(fullname(dbname))
         for line in conn.iterdump():
             yield line + "\n"
+        conn.close()
+
+    return generate
+
+def db_selector(dbname, query):
+    def generate():
+        print("QUERY:", query)
+        conn = sqlite3.connect(fullname(dbname))
+        c = conn.cursor()
+        for row in c.execute(query):
+            yield "\t".join([str(col) for col in row]) + "\n"
         conn.close()
 
     return generate
